@@ -1,0 +1,1 @@
+# Tìm hiểu kĩ để so sánh CTE, View, Temp Table, Table Variable, Inline TVFs

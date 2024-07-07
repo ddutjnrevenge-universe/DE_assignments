@@ -1,4 +1,4 @@
-# Tìm hiểu kĩ để so sánh CTE, View, Temp Table, Table Variable, Inline TVFs
+# Compare CTE, View, Temp Table, Table Variable, Inline TVFs
 1. [CTE](#cte)
 2. [View](#view)
 3. [Temporary Table](#temp-table)

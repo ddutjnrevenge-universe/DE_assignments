@@ -152,3 +152,5 @@ DROP FUNCTION getcustomerpayment(integer)
 - `Views` are ideal for encapsulating complex logic and providing a consistent view of data, especially when indexed or materialized for performance.
 - `Table Variables`, although not directly available in PostgreSQL, can be replaced by CTEs for smaller datasets or temporary tables for larger ones.
 - `Inline TVFs` are recommended for parameterized queries and encapsulating logic efficiently within the query execution.
+ 
+#### When dealing with query performance, always need to test with each query/data as there are many variables that can affect performance and different use cases could lead to another option giving better performance.

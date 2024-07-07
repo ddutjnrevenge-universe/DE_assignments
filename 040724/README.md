@@ -8,13 +8,13 @@
 [Some findings](#conclusion)
 ---
 ## CTE
-- Result set of a query which exists temporarily and for use only WITHIN context of a larger query
+- Result set of a query which exists temporarily and **for use only WITHIN context of a larger query**
 - **NOT** stored and exists only for the duration of the query
-USE CASE:
-- need to refer a derived table multiple times in a single query (`select`, `insert`, `update`, ...)
-- alternative to create a view in db
-- perform same calculation multiple times over across multiple query components
--> useful for readibility and recursion but not be the most performant option for large dataset
+- USE CASE:
+    - need to refer a derived table multiple times in a single query (`select`, `insert`, `update`, ...)
+    - alternative to create a view in db
+    - perform same calculation multiple times over across multiple query components
+    -> useful for readibility and recursion but not be the most performant option for large dataset
 ```sql
 -- CTE (exists in a single query)
 -- EXPLAIN ANALYZE
@@ -63,8 +63,8 @@ CREATE MATERIALIZED VIEW <view_name>
 as query
 REFRESH MATERIALIZED VIEW <view_name>
 ```
-## Temp Table
-- store intermediate results that can be reused within the session. Useful for complex processing and can be indexed.
+## Temporary Table
+- store intermediate results that can be reused within the session, useful for complex processing and can be indexed
 - only visible within the session in which they are created and are automatically dropped when the session ends
 - Performance: consume more resources since they involve data storage, but they can be indexed for better performance with large datasets
 ```sql
@@ -93,11 +93,11 @@ SELECT * FROM TempCustomerPayment WHERE customer_id = 1;
 "Execution Time: 0.703 ms"
 ```
 ## Table Variable 
-- a local variable that stores data temporarily
-- store small amounts of data
+- a local variable that stores data temporarily - store small amounts of data
 - scoped to the batch, stored procedure, or function
 - Performance: generally faster for small datasets due to less logging and no statistics, BUT less efficient for large datasets
-- Table Variable are a specific construction from MS-SQLServer that creates a temporary table inside a procedure, prefixed by @.
+
+*Table Variable are a specific construction from MS-SQLServer that creates a temporary table inside a procedure, prefixed by @.*
 ```sql
 DECLARE @TableVar TABLE (
     customer_id INT,
@@ -111,10 +111,9 @@ FROM payment;
 
 SELECT * FROM @TableVar WHERE customer_id = 1;
 ```
-- In PostgreSQL, every table name serves as type name for the row type (a.k.a. composite type) automatically - not as table type, **there are no "table types" or "table variables" in Postgres** (but there are typed tables).
-
-
-- In PostgreSQL, there is **no direct equivalent of table variables** like in some other database management systems (e.g., SQL Server). However, you can achieve similar functionality using Common Table Expressions (CTEs) or temporary tables.
+- In PostgreSQL:
+    - every table name serves as type name for the row type (a.k.a. composite type) automatically - not as table type, there are **no "table types" or "table variables" in Postgres** (but there are typed tables)
+    - there is **no direct equivalent of table variables** like in some other database management systems (e.g., SQL Server). However, you can achieve similar functionality using Common Table Expressions (CTEs) or temporary tables
 ## Inline TVFs
 - return a table data type and can be used in the FROM clause of a query
 - Useful for parameterized queries and encapsulating logic

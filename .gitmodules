@@ -4,3 +4,6 @@
 [submodule "DE_assignment_2"]
 	path = DE_assignment_2
 	url = https://github.com/ddutjnrevenge-universe/DE_assignment_2.git
+[submodule "DE_assignment_1"]
+	path = DE_assignment_1
+	url = https://github.com/ddutjnrevenge-universe/DE_assignment_1.git

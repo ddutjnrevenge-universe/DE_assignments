@@ -2,8 +2,12 @@ from pyspark import SparkContext
 import time
 
 # Initialize SparkContext
-sc = SparkContext("local", "Join and Filter")
+# sc = SparkContext("local", "Join and Filter")
+# from pyspark.sql import SparkSession
 
+# spark = SparkSession.builder.appName("Join and Filter").getOrCreate()
+# sc = spark.sparkContext
+sc = SparkContext("Join and Filter Submit")
 # Define the RDDs
 RDD_A = sc.parallelize([(1, -1), (2, 20), (3, 3), (4, 0), (5, -12)])
 RDD_B = sc.parallelize([(1, 31), (2, 3), (3, 0), (4, -2), (5, 17)])

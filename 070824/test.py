@@ -1,12 +1,12 @@
 import random
 import time
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import collect_list, struct, col
+from pyspark.sql.functions import collect_list, struct
 from scipy.spatial import ConvexHull
-from pyspark.sql.types import ArrayType, StructType, StructField, IntegerType
+import pandas as pd
 
 # Initialize Spark session
-spark = SparkSession.builder.appName("ConvexHullPerParticle").getOrCreate()
+spark = SparkSession.builder.appName("ConvexHullPerParticleNoUDF").getOrCreate()
 
 # Generate sample data with 1,000,000 data points
 num_points = 1000000
@@ -25,7 +25,10 @@ grouped_df = df.groupBy("particle_id").agg(
     collect_list(struct("x", "y")).alias("points")
 )
 
-# Define a function to compute convex hull
+# Collect the DataFrame to the driver
+grouped_data = grouped_df.collect()
+
+# Define a function to compute convex hull (same as before)
 def compute_convex_hull(points):
     points = [(p['x'], p['y']) for p in points]
     if len(points) < 3:
@@ -34,15 +37,19 @@ def compute_convex_hull(points):
     hull_points = [points[i] for i in hull.vertices]
     return hull_points
 
-# Register the UDF
-hull_schema = ArrayType(StructType([StructField("x", IntegerType()), StructField("y", IntegerType())]))
-compute_convex_hull_udf = spark.udf.register("compute_convex_hull", compute_convex_hull, hull_schema)
+# Process each particle's points locally on the driver
+results = []
+for row in grouped_data:
+    particle_id = row['particle_id']
+    points = row['points']
+    convex_hull = compute_convex_hull(points)
+    results.append((particle_id, convex_hull))
 
-# Apply the UDF
-result_df = grouped_df.withColumn("convex_hull", compute_convex_hull_udf(col("points")))
+# Convert the results back to a Spark DataFrame
+result_df = spark.createDataFrame(results, ["particle_id", "convex_hull"])
 
 # Show the result (only showing a small sample due to the large dataset)
-result_df.select("particle_id", "convex_hull").show(10, truncate=False)
+result_df.show(10, truncate=False)
 
 # Measure end time and print the execution time
 end_time = time.time()

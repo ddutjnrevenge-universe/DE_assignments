@@ -8,10 +8,17 @@ import os
 # conf = SparkConf().set("spark.executor.cores", "2")\
                 #   .set("spark.executor.memory", "2g")\
                 #    .set("spark.executor.instances", "3")\
-                #   .set("spark.dynamicAllocation.enabled", "false")
+                #   .set("spark.dynamicAllocation.enabled", "false") 
+
 # set number of cores in each worker is 2 
-# given 3 workers, 36 cores in total, 6 cores for each worker, now just want to use 2 cores for each worker, 2gb memory for each worker
-# so 6 cores used in total, 3 workers, 2gb memory for each worker
+# given 3 workers, 36 cores in total, 6 cores for each worker, now just want to use 2 cores for each executor, 2gb memory for each executor
+# so 6 cores used in total, 3 workers, 2gb memory for each executor
+
+
+# ~~~!!!
+# 36 cores in total, but total the worker just use 6x3=18 cores => wasted resources, bad performance, not paralellism
+
+
 conf = SparkConf().set("spark.executor.cores", "2")\
                   .set("spark.executor.memory", "2g")\
                 #   .set("spark.executor.instances", "3")\
@@ -19,6 +26,8 @@ conf = SparkConf().set("spark.executor.cores", "2")\
 
 sc = SparkContext(appName="Test", conf=conf)
 
+
+# n_worker is fixed :))
 n_workers = 3 # number of workers
 from math import sqrt, ceil
 

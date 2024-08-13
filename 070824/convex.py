@@ -10,7 +10,9 @@ spark = SparkSession.builder.appName("ConvexHullPerParticle").getOrCreate()
 
 # Generate sample data with 1,000,000 data points
 num_points = 1000000
-num_particles = 10000  # Assuming we have 10,000 particles
+num_particles = 10000  
+# set seed for reproducibility
+random.seed(0)
 data = [(random.randint(1, num_particles), random.randint(0, 1000), random.randint(0, 1000)) for _ in range(num_points)]
 
 # Measure the execution time
@@ -33,7 +35,7 @@ def compute_convex_hull(points):
     hull = ConvexHull(points)
     hull_points = [points[i] for i in hull.vertices]
     return hull_points
-
+# ------------------------------------------------------------
 # Register the UDF
 hull_schema = ArrayType(StructType([StructField("x", IntegerType()), StructField("y", IntegerType())]))
 compute_convex_hull_udf = spark.udf.register("compute_convex_hull", compute_convex_hull, hull_schema)
@@ -41,10 +43,8 @@ compute_convex_hull_udf = spark.udf.register("compute_convex_hull", compute_conv
 # Apply the UDF
 result_df = grouped_df.withColumn("convex_hull", compute_convex_hull_udf(col("points")))
 
-# Show the result (only showing a small sample due to the large dataset)
 result_df.select("particle_id", "convex_hull").show(10, truncate=False)
 
-# Measure end time and print the execution time
 end_time = time.time()
 execution_time = end_time - start_time
 print(f"Execution time: {execution_time} seconds")

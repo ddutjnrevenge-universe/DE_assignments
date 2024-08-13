@@ -1,7 +1,7 @@
 # Overview
 ### In computational geometry, the `convex hull` of a set of points is the `smallest convex set` (by area, volume, etc.) within which all points lie inside that set of points.
 
-![alt text](convexhull.png)
+![alt text](images/convexhull.png)
 
 This Spark job calculates the convex hull for a set of 2D points associated with different particles. 
 
@@ -13,7 +13,7 @@ This Spark job calculates the convex hull for a set of 2D points associated with
 3. **Grouping Data**: Groups points by `particle_id`, collecting them into lists.
 4. **UDF Application**: A User-Defined Function (UDF) computes the convex hull for each particle's points. The UDF is applied to create a new `convex_hull` column in the DataFrame.
 5. **Execution Time Measurement**: Measures the time taken to complete the job.
-![alt text](convex_udf.png)
+![alt text](images/convex_udf.png)
 - **`Execution time`**: 37.08649659156799 seconds
 
 ## UDF Benefits
@@ -26,7 +26,7 @@ This Spark job calculates the convex hull for a set of 2D points associated with
 
 ## Experimenting running the same job without using UDF
 [See detailed code](noudf.py)
-![alt text](convex_noudf.png)
+![alt text](images/convex_noudf.png)
 - **`Execution time`**: 49.5997588634491 seconds
 ### Why does it take longer?
 - **Collecting Data to Driver**: The `grouped_df.collect()` statement collects the entire DataFrame to the driver node. This operation is expensive and can cause memory issues if the dataset is large. In contrast, when using a UDF, the data remains distributed across the cluster, and the processing happens on the worker nodes.

@@ -46,6 +46,10 @@ services:
       - spark-master
     env_file:
       - .env.spark
+    environment:
+      SPARK_WORKER_CORES: 6
+      SPARK_WORKER_MEMORY: 6g
+      SPARK_MASTER_URL: spark://spark-master:7077
     volumes:
       - ./input:/opt/spark/data
       - ./spark_apps:/opt/spark/apps

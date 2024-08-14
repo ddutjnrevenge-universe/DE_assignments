@@ -14,7 +14,7 @@ conf = SparkConf().set("spark.executor.memory", "2g")\
 
 n_workers = 3  # Number of workers
 
-partition_multiples = range(18, 19, 6)  # Range of partition multiples (3, 6, 9, 12, 15)
+partition_multiples = range(24, 37, 3)  # Range of partition multiples (3, 6, 9, 12, 15)
 
 from math import sqrt, ceil
 
@@ -54,6 +54,7 @@ with open(csv_file_path, mode='a', newline='') as file:
         numbers_rdd = numbers_rdd.map(lambda x: int(x))
         prime_numbers_rdd = numbers_rdd.filter(is_prime)
         prime_numbers_rdd.count()
+        # prime_numbers_rdd.take(20)
 
         # End the timer
         end_time = time.time()

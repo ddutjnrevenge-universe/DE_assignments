@@ -40,7 +40,7 @@ numbers_file = "/opt/spark/data/numbers_2.txt"
 prime_numbers_rdd_output_path = "/opt/spark/data/results/prime_numbers_rdd_dataset2.txt"
 # Load the numbers and process them
 numbers_rdd = sc.textFile(numbers_file)
-num_partitions = 15
+num_partitions = 18
 numbers_rdd = numbers_rdd.repartition(num_partitions)  # Set the number of partitions
 numbers_rdd = numbers_rdd.map(lambda x: int(x))
 prime_numbers_rdd = numbers_rdd.filter(is_prime)

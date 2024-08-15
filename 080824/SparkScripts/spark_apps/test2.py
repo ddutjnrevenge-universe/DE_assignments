@@ -14,7 +14,7 @@ conf = SparkConf().set("spark.executor.memory", "2g")\
 
 n_workers = 3  # Number of workers
 
-partition_multiples = range(24, 37, 3)  # Range of partition multiples (3, 6, 9, 12, 15)
+partition_multiples = range(39, 49, 3)  # Range of partition multiples (3, 6, 9, 12, 15)
 
 from math import sqrt, ceil
 

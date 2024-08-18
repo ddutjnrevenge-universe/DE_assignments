@@ -10,7 +10,6 @@ Chạy code đó trên cùng cluster, nhưng giờ mỗi worker có
 1. Số executor/worker > số worker/cluster (6>3)
 2. Số core/executor > số executor/worker (6>1)
 so sánh running time với trường hợp trên. Trong TH trên, số executor/worker = 1. Có thể x6 là số partition phù hợp trong TH này nhưng so với số (1. và 2.) thì có thể không.
-Mọi người cũng nên tìm hiểu thêm về memory management trong spark nữa.
 # 1. "Difference" between `repartition down` and `coalesce`
 ## Repartition
 - **Function:** repartition(n) allows you to increase or decrease the number of partitions to a specific number (n), and it involves a full shuffle of data across the network.

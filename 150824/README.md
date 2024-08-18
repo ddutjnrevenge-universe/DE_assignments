@@ -6,7 +6,7 @@ Số partition/worker = bội số executor
  
 Số executor/worker = (Số cores/worker) / (Số cores/executor)
 
-Nếu có thể, em chạy code đó trên cùng cluster, nhưng giờ mỗi worker có
+Chạy code đó trên cùng cluster, nhưng giờ mỗi worker có
 1. Số executor/worker > số worker/cluster (6>3)
 2. Số core/executor > số executor/worker (6>1)
 so sánh running time với trường hợp trên. Trong TH trên, số executor/worker = 1. Có thể x6 là số partition phù hợp trong TH này nhưng so với số (1. và 2.) thì có thể không.

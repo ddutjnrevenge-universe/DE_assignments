@@ -57,6 +57,7 @@ def compute_convex_hull(points):
 
 # Initialize Spark session
 spark = SparkSession.builder.appName("ConvexHullPerParticle").getOrCreate()
+
 # Generate sample data with 1,000,000 data points
 num_points = 1000000
 num_particles = 4
@@ -75,7 +76,10 @@ df = spark.createDataFrame(data, columns)
 grouped_df = df.groupBy("particle_id").agg(
     collect_list(struct("x", "y")).alias("points")
 )
+# Print default partitions
 print(f"Default partitions: {grouped_df.rdd.getNumPartitions()}")
+# Repartition the DataFrame for parallel processing
+# grouped_df = grouped_df.repartition(36)
 
 # # Define a function to compute convex hull
 # def compute_convex_hull(points):

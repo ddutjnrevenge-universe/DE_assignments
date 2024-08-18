@@ -5,16 +5,16 @@ import csv
 import os
 
 # Configuration for Spark
-# conf = SparkConf().set("spark.executor.cores", "2")\
+# conf = SparkConf().set("spark.executor.cores", "2")\ 
                 #   .set("spark.executor.memory", "2g")
-conf = SparkConf().set("spark.executor.memory", "2g")\
-                  .set("spark.executor.cores", "2")
+conf = SparkConf().set("spark.executor.cores", "6") # test 6 cores/executor with 1 executors/worker
+# conf = SparkConf().set("spark.executor.cores", "1") # test 6 executors/worker with 3 worker/clusters
 # conf = SparkConf().set("spark.executor.memory", "2g").set("spark.executor.cores", "2")      
 # sc = SparkContext(appName="Test", conf=conf)
 
 n_workers = 3  # Number of workers
 
-partition_multiples = range(39, 49, 3)  # Range of partition multiples (3, 6, 9, 12, 15)
+partition_multiples = range(1, 30, 1)  # Range of partition multiples (3, 6, 9, 12, 15)
 
 from math import sqrt, ceil
 
@@ -27,13 +27,16 @@ def is_prime(n):
     return True
 
 # Path to the numbers file and output path
-numbers_file = "/opt/spark/data/numbers_large.txt"
-# numbers_file = "/opt/spark/data/numbers_2.txt"
-prime_numbers_rdd_output_path = "/opt/spark/data/results/prime_numbers_rdd_large.txt"
-# prime_numbers_rdd_output_path = "/opt/spark/data/results/prime_numbers_rdd_dataset2.txt"
+# numbers_file = "/opt/spark/data/numbers_large.txt"
+numbers_file = "/opt/spark/data/numbers.txt"
+# prime_numbers_rdd_output_path = "/opt/spark/data/results/prime_numbers_rdd_large.txt"
+prime_numbers_rdd_output_path = "/opt/spark/data/results/prime_numbers_rdd.txt"
 # Path to the CSV file for logging
 # csv_file_path = "/opt/spark/data/results/execution_statistics_dataset2.csv"
-csv_file_path = "/opt/spark/data/results/execution_statistics_large.csv"
+# csv_file_path = "/opt/spark/data/results/execution_statistics_large.csv"
+csv_file_path = "/opt/spark/data/results/6c_e_1e_w.csv"
+# csv_file_path = "/opt/spark/data/results/6e_w_3w_cl.csv"
+
 # Check if CSV file exists, if not, write the header
 file_exists = os.path.isfile(csv_file_path)
 with open(csv_file_path, mode='a', newline='') as file:

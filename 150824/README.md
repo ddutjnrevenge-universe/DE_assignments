@@ -1,4 +1,4 @@
-Số core/executor > số executor/worker
+<!-- Số core/executor > số executor/worker
  
 Số partition = bội số worker -> tính toán phân tán
 Số partition/worker = bội số executor
@@ -9,7 +9,7 @@ Số executor/worker = (Số cores/worker) / (Số cores/executor)
 Chạy code đó trên cùng cluster, nhưng giờ mỗi worker có
 1. Số executor/worker > số worker/cluster (6>3)
 2. Số core/executor > số executor/worker (6>1)
-so sánh running time với trường hợp trên. Trong TH trên, số executor/worker = 1. Có thể x6 là số partition phù hợp trong TH này nhưng so với số (1. và 2.) thì có thể không.
+so sánh running time với trường hợp trên. Trong TH trên, số executor/worker = 1. Có thể x6 là số partition phù hợp trong TH này nhưng so với số (1. và 2.) thì có thể không. -->
 # 1. "Difference" between `repartition down` and `coalesce`
 ## Repartition
 - **Function:** repartition(n) allows you to increase or decrease the number of partitions to a specific number (n), and it involves a full shuffle of data across the network.
@@ -30,9 +30,71 @@ Even though coalesce is available, you might still need repartition when:
 - Need to strictly control the number of partitions after transformations that might have caused imbalance, even if it means incurring the cost of a shuffle.
 
 # 2. Figure out how to use `HashPartitioner` and `RangePartitioner` on skew data.
+In Spark, data are split into chunk of rows and stored on worker nodes, each "chunk" is called a **partition** and a given wormer can have any number of partitions of any size. (but it's best to evenly spread out the data so that each worker has an equal amount of data to process)
 
+-> When the data are not balanced between workers, we call the data “skewed”
 
+## Why care about "skewed" data?
+- Slow stages/tasks runtime: certain operations may work with too much data over others
+- Spill data to disk: if data not fit in memory on a worker it will be written to disk and takes much longer
+- OOM
 
+->  "Skewed" data: uneven utilization of compute and memory resources
 
+## `HashPartitioner`
+- Partition data based on the hash of the key, assigns each key-value pair to a partition based on the hash value of the key modulo the number of partitions
+- Use HashPartitioner when your key distribution is relatively uniform or when want to evenly distribute data across partitions to avoid skew.
+- Particularly useful for key-based operations like `joins`, `groupBy`, or `reduceByKey`, where evenly distributed keys are crucial for performance.
+### Example:
+```python
+# Simulate HashPartitioner by partitioning using a hash function
+# as Spark’s HashPartitioner is not directly available in the Python API
+def hash_partitioner(key):
+    return hash(key) % 4 
+hash_partitioned_rdd = rdd.partitionBy(4, partitionFunc=hash_partitioner)
+```
+## `RangePartitioner`
+- Distribute data based on ranges of keys. It is more suitable when the keys have a natural ordering (e.g., numbers, strings).
+- Divide the key space into contiguous ranges and assigns each range to a partition. 
+- Particularly useful where need sorted data or want to minimize skew by defining explicit ranges.
+### Example: 
+```python
+# Custom range partitioner
+def range_partitioner(key):
+    if key < 10000:
+        return 0
+    elif 10000 <= key < 20000:
+        return 1
+    elif 20000 <= key < 40000:
+        return 2
+    else:
+        return 3
+
+range_partitioned_rdd = rdd.partitionBy(4, partitionFunc=range_partitioner)
+```
+## Handling Skewed Data
+### Identifying Skew:
+Before applying a partitioner, identify if  data is skewed.(`countByKey()` or `glom()` to inspect how keys are distributed across partitions)
+### Dealing with Skew:
+`HashPartitioner`: If keys are skewed, `HashPartitioner` might still cause imbalance if the hash values of the keys are also skewed.
+
+- **Salt the keys**: Append a random prefix to keys before partitioning to spread them more evenly across partitions.
+- **Custom Partitioning Logic**: Implement a custom partitioner that can distribute specific skewed keys more evenly.
+
+`RangePartitioner`: If using `RangePartitioner`, must ensure that the range boundaries are chosen to avoid large data concentrations in specific partitions.
+- **Pre-sample the data**: Pre-sample a subset of the data to estimate the distribution and set more balanced range boundaries.
+- **Custom Ranges**: Define custom ranges that account for skewed data distributions.
+
+### Example: Mitigating Skew with HashPartitioner and Salting
+```python 
+# Salt the keys to distribute the skewed data
+def salt_key(key, num_salts=4):
+    salt = random.randint(0, num_salts-1)
+    return (f"{salt}_{key}", key)
+
+salted_partitioned_rdd = rdd.map(lambda x: (salt_key(x[0]),x[1])).partitionBy(4, partitionFunc=hash_partitioner)
+```
+
+# 3.
 
 

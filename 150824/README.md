@@ -95,6 +95,100 @@ def salt_key(key, num_salts=4):
 salted_partitioned_rdd = rdd.map(lambda x: (salt_key(x[0]),x[1])).partitionBy(4, partitionFunc=hash_partitioner)
 ```
 
-# 3.
+# 3. Study the memory management in spark
 
+## Memory Allocation
+
+- Overhead memo: shuffle exchange/ reading partition data from remote storage (network read buffer)
+
+### Driver memory
+
+- `spark.driver.memory` (e.g. = 1GB) → JVM memory
+- `spark.driver.memoryOverhead` = 0.1 (default is 0.1) (max 10% or 384MB)
+    
+    → Total memory for the container is 1GB + 384MB
+    
+    
+    - **Overhead memory** is used by container process or any other non JVM process within the container
+    - **Spark driver** uses all JVM heap but nothing from overhead
+
+### Executor memory
+
+- Total memory allocated to the executor container is sum of:
+    1. Overhead memo: `spark.executor.memoryOverhead`
+    2. Heap memo: `spark.executor.memory`
+    3. Off Heap memo: `spark.memory.offHeap.size`
+        - Adding off-heap memo is an indirect method of increasing the executor and storage memo pools
+        
+        → If needed it will be used to buffer Spark dataframe operations and cache the dataframes
+        
+    
+    
+    1. PySpark memo: `spark.executor.pyspark.memory`
+- E.g. ask for executor memo = 8gb → overhead = 10% = 800mb (by default offheapmemo and pysparkmemo is 0) ⇒ total container memo: 8800mb
+    - If worker node is a 6GB machine → YARN cannot allocate a 8GB container on a 6GB machine → not enough physical memo
+    
+    ⇒ Before asking for driver or executor memo, should check with your cluster admin for maximum allowed value
+
+- In this example, Spark driver cannot use more than 4GB & non JVM workload in container cannot use more than 400mb → container cannot use more than 4.4gb of memory in total
+- Executor JVM cannot use more than 8GB & non JVM processes cannot use more than 800mb → container cannot use more than 8.8gb of memory
+- What is PySpark executor memory? → PySpark is not a JVM process, so get nothing from jvm memo, all PySpark executor have is 800mb of overhead memo, while 300-400mb of this is constantly consumed by the container processes and other internal processes ⇒ **Get approximately 400mb in total**
+
+## Memory Management
+
+- Executor memory includes JVM heap and Overhead
+
+### JVM Heap
+
+- 3 parts:
+    
+    `spark.executor.memory` 
+    
+    `spark.executor.cores` 
+    
+    
+    1. **Reserved memo**: fixed reserve for Spark Engine
+    2. **Spark Memory**: (by default: `spark.memory.fraction` = 0.6) 
+        
+        <aside>
+        ❗ 0.6 of (**total executor memory - reserved memory)**
+        
+        </aside>
+        
+        - Used for DataFrame (**Operations + Caching)**
+        - Seperated into 2 subpools
+            1. **Storage Memo pool**: (default:`spark.memory.storageFraction` = 0.5)
+            
+            → Cache memo for DataFrame
+            
+            - long-term
+            1.  **Executor Memo pool**: the rest
+            
+            → Buffer memo for DataFrame operations (e.g. aggregating or performing some calculation)
+            
+            - Short-lived: used for operations and free immediately as soon as execution complete
+    3. **User Memory**: the rest (0.4 by default)
+        - **User-defined data structures** (hash maps,…)
+        - **Spark internal metadata**
+        - **UDFs created by user**
+        - **RDD conversion operations**
+            - If using DataFrame operations, this DO NOT USE user memo even if the df is internally translated and compiled into RDD
+            - Using user memo only if **apply RDD operations directly** in your code
+        - **RDD linage and dependency**
+
+## Core view
+
+- E.g. we have `spark.executor.cores` =4
+
+→ have 4 slots/threads equivalent to 4 tasks that can run in parallel 
+
+(all these slots are threads within the same JVM)
+
+- 4 threads to share 2 memory pools
+- Before spark 1.6: equally divided to all the slots
+- Later: Unified memory manager
+    - tries to implement fair allocation amongst the **active tasks**
+    - nothing reserved for any task        
+    - If executor memory fully consumed → memory manager also allocate executor memory from storage memory if available and vice versa
+        
 
